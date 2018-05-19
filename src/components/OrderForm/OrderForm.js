@@ -18,6 +18,19 @@ import PlacesAutocomplete, { geocodeByAddress, getLatLng } from 'react-places-au
 //   );
 // }
 
+const distance = (lat1, lon1, lat2, lon2) => {
+	let radlat1 = Math.PI * lat1/180
+	let radlat2 = Math.PI * lat2/180
+	let theta = lon1-lon2
+	let radtheta = Math.PI * theta/180
+	let dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+	dist = Math.acos(dist)
+	dist = dist * 180/Math.PI
+	dist = dist * 60 * 1.1515
+	return dist
+}
+
+
 class OrderForm extends Component {
     constructor(props) {
         super(props)
@@ -28,14 +41,42 @@ class OrderForm extends Component {
             vehicle: 'Car',
             price: '',
         }
+        this.pCoords = {};
+        this.dCoords= {};
     }
 
-    handleSelect = (address) => {
+
+
+    handleSelectP = (address) => {
         geocodeByAddress(address)
           .then(results => getLatLng(results[0]))
-          .then(latLng => console.log('Success', latLng))
+          .then(latLng => this.pCoords =latLng)
           .catch(error => console.error('Error', error))
       }
+
+    handleSelectD = (address) => {
+        geocodeByAddress(address)
+          .then(results => getLatLng(results[0]))
+          .then(latLng => this.dCoords =latLng)
+          .catch(error => console.error('Error', error))
+      }   
+    
+    calculatePrice = (pickup, delivery) => {
+        let price = 15.50;
+        let dist = distance(pickup.lat, pickup.lng, delivery.lat, delivery.lng);
+        if (this.state.when === 'In 3 Hours' && dist > 10 ) {
+            price += (dist - 7) * 1;
+        }
+        else if (this.state.when === 'ASAP' && dist > 7) {
+            price += (dist - 7) * 1;
+        } 
+        if (this.state.vehicle === 'Mid Sized') {
+            price += price * 1.19354839
+        } else if (this.state.vehicle === 'Pickup Truck' || this.state.vehicle === 'Cargo Van' && dist < 7 ) {
+            price = 20.50
+        } 
+        this.setState({price: price.toFixed(2)});
+    }
 
     handleChange = (pickup) => {
         this.setState({ ...this.state, pickup })
@@ -52,7 +93,13 @@ class OrderForm extends Component {
     handleSubmit = (e) => {
         e.preventDefault();
         console.log(this.state);
+        console.log(this.pCoords, this.dCoords);
+        // console.log(distance(this.pCoords.lat, this.pCoords.lng, this.dCoords.lat, this.dCoords.lng));
+        console.log(this.calculatePrice(this.pCoords, this.dCoords));
+        
     }
+
+
 
     render(){
         return (
@@ -63,7 +110,7 @@ class OrderForm extends Component {
                     <PlacesAutocomplete
                         value={this.state.pickup}
                         onChange={this.handleChange}
-                        onSelect={this.handleSelect}
+                        onSelect={this.handleSelectP}
                     >
                     {({ getInputProps, suggestions, getSuggestionItemProps }) => (
                     <div>
@@ -95,7 +142,7 @@ class OrderForm extends Component {
                     <PlacesAutocomplete
                         value={this.state.delivery}
                         onChange={this.handleChangeDelivery}
-                        onSelect={this.handleSelect}
+                        onSelect={this.handleSelectD}
                     >
                     {({ getInputProps, suggestions, getSuggestionItemProps }) => (
                     <div>
