@@ -1,22 +1,6 @@
 import React, { Component } from 'react';
 import PlacesAutocomplete, { geocodeByAddress, getLatLng } from 'react-places-autocomplete';
-// import Geocode from 'react-geocode';
-
-// Geocode.setApiKey(process.env.REACT_APP_GOOGLE_API_KEY);
-
-// Geocode.enableDebug();
-
-// const geocode = (address) => {
-//     Geocode.fromAddress(address).then(
-//     response => {
-//       const { lat, lng } = response.results[0].geometry.location;
-//       console.log(lat, lng);
-//     },
-//     error => {
-//       console.error(error);
-//     }
-//   );
-// }
+import axios from 'axios';
 
 const distance = (lat1, lon1, lat2, lon2) => {
 	let radlat1 = Math.PI * lat1/180
@@ -65,16 +49,26 @@ class OrderForm extends Component {
         let price = 15.50;
         let dist = distance(pickup.lat, pickup.lng, delivery.lat, delivery.lng);
         if (this.state.when === 'In 3 Hours' && dist > 10 ) {
-            price += (dist - 7) * 1;
+            price += (dist - 10) * 1;
+            console.log('in 3 hrs and dist over 10');
+            
         }
         else if (this.state.when === 'ASAP' && dist > 7) {
             price += (dist - 7) * 1;
+            console.log('in ASAP and dist over 7');
         } 
         if (this.state.vehicle === 'Mid Sized') {
-            price += price * 1.19354839
-        } else if (this.state.vehicle === 'Pickup Truck' || this.state.vehicle === 'Cargo Van' && dist < 7 ) {
-            price = 20.50
-        } 
+            price = price * 1.1935;
+            console.log('in midsized');
+        } else if (this.state.vehicle === 'Pickup Truck') {
+            price = price * 1.2139;
+            console.log('in pickup');
+            
+        } else if (this.state.vehicle === 'Cargo Van' ) {
+            price = price * 1.2674;
+            console.log('in van');
+            
+        }
         this.setState({price: price.toFixed(2)});
     }
 
@@ -94,9 +88,23 @@ class OrderForm extends Component {
         e.preventDefault();
         console.log(this.state);
         console.log(this.pCoords, this.dCoords);
-        // console.log(distance(this.pCoords.lat, this.pCoords.lng, this.dCoords.lat, this.dCoords.lng));
-        console.log(this.calculatePrice(this.pCoords, this.dCoords));
-        
+        this.calculatePrice(this.pCoords, this.dCoords);
+    }
+
+    newOrder = () => {
+        axios.post('http://localhost:3001/api/v1/orders', {order: this.state})
+        .then(response => {
+            console.log(response);
+        }).catch(error => {
+            console.log(error);
+        });
+        this.setState({
+            pickup: '',
+            delivery: '',
+            when: 'ASAP',
+            vehicle: 'Car',
+            price: '',
+        })
     }
 
 
@@ -193,7 +201,7 @@ class OrderForm extends Component {
                 <div className="price">
                     <h2>Price: ${this.state.price}</h2>
                 </div>
-                <button>Submit Order</button>
+                <button onClick={this.newOrder}>Submit Order</button>
             </div>
         )
     }
