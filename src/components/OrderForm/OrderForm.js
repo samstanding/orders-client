@@ -53,7 +53,6 @@ class OrderForm extends Component {
         if (this.state.when === 'In 3 Hours' && dist > 10 ) {
             price += (dist - 10) * 1;
             console.log('in 3 hrs and dist over 10');
-            
         }
         else if (this.state.when === 'ASAP' && dist > 7) {
             price += (dist - 7) * 1;
@@ -94,7 +93,7 @@ class OrderForm extends Component {
     }
 
     newOrder = () => {
-        axios.post('http://localhost:3001/api/v1/orders', {order: this.state})
+        axios.post('http://localhost:3001/api/v1/statuses/1/orders', {order: this.state})
         .then(response => {
             console.log(response);
         }).catch(error => {
@@ -108,8 +107,6 @@ class OrderForm extends Component {
             price: '',
         })
     }
-
-
 
     render(){
         let orderButton;
@@ -141,7 +138,6 @@ class OrderForm extends Component {
                     <div className="autocomplete-dropdown-container">
                     {suggestions.map(suggestion => {
                         const className = suggestion.active ? 'suggestion-item--active' : 'suggestion-item';
-                        // inline style for demonstration purpose
                         const style = suggestion.active
                                     ? { backgroundColor: '#fafafa', cursor: 'pointer' }
                                     : { backgroundColor: '#ffffff', cursor: 'pointer' };
