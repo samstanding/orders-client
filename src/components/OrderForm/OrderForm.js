@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import PlacesAutocomplete, { geocodeByAddress, getLatLng } from 'react-places-autocomplete';
 import axios from 'axios';
+import Modal from 'react-bootstrap/lib/Modal';
+
 
 const distance = (lat1, lon1, lat2, lon2) => {
 	let radlat1 = Math.PI * lat1/180
@@ -110,9 +112,17 @@ class OrderForm extends Component {
 
 
     render(){
+        let orderButton;
+        if (this.state.price.length > 0) {
+            orderButton =  <button onClick={this.newOrder}>Submit Order</button>;
+        }
         return (
-            <div>
-                <h1>OrderForm</h1>
+            <div className = "static-modal">
+            <Modal.Dialog>
+            <Modal.Header>
+                <Modal.Title>Order Form</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
                 <form onSubmit={this.handleSubmit}> 
                     <div className="input group">
                     <PlacesAutocomplete
@@ -163,7 +173,6 @@ class OrderForm extends Component {
                     <div className="autocomplete-dropdown-container">
                     {suggestions.map(suggestion => {
                         const className = suggestion.active ? 'suggestion-item--active' : 'suggestion-item';
-                        // inline style for demonstration purpose
                         const style = suggestion.active
                                     ? { backgroundColor: '#fafafa', cursor: 'pointer' }
                                     : { backgroundColor: '#ffffff', cursor: 'pointer' };
@@ -194,14 +203,18 @@ class OrderForm extends Component {
                             <option value="Cargo Van">Cargo Van</option>
                         </select>
                     </div>
-                    <div className="input group">
-                        <input type="submit" name="Generate Price Estimate" value="Generate Price Estimate"/>
-                    </div>
                 </form>
+                </Modal.Body>
+                <Modal.Footer>
+                <div className="input group">
+                        <button onClick={this.handleSubmit}>Generate Price Estimate</button>
+                    </div>
                 <div className="price">
                     <h2>Price: ${this.state.price}</h2>
                 </div>
-                <button onClick={this.newOrder}>Submit Order</button>
+               {orderButton}
+               </Modal.Footer>
+               </Modal.Dialog>
             </div>
         )
     }
