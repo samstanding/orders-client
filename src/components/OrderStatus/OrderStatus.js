@@ -1,21 +1,28 @@
 import React, { Component } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 import update from 'immutability-helper';
 import OrderTable from '../OrderTable/OrderTable';
 
-class OrderTracker extends Component {
+class OrderStatus extends Component {
     constructor(props){
-        super(props)
+        super(props);
         this.state = {
             orders: [],
         }
     }
 
-    ordersGet = () => {
-        axios.get('http://localhost:3001/api/v1/statuses.json')
-        .then(response => {
-            this.setState({ orders: response.data });
-        }).catch(error => console.log(error))
+   
+
+    componentDidMount(){
+        const { match: { params } } = this.props;
+        this.getOrdersbyID = () => {
+            axios.get(`http://localhost:3001/api/v1/statuses/${params.id}.json`)
+            .then(response => {
+                this.setState({ orders: response.data })
+            }).catch(error => console.log(error))
+        }
+        this.getOrdersbyID();
     }
 
     deleteOrder = (status_id, id) => {
@@ -38,23 +45,25 @@ class OrderTracker extends Component {
         }
         axios.put(`http://localhost:3001/api/v1/statuses/${order.status_id}/orders/${order.id}`, {order: updatedOrder})
         .then(response =>{
-            this.ordersGet();
+            this.getOrdersbyID();
         }).catch(error => console.log(error));
     }
 
-    componentDidMount(){
-       this.ordersGet();
-    }
-
-
-    render() {
+    render(){
+        let status; 
+        if (this.state.orders.length > 0) {
+            status = this.state.orders[0].status;
+        }
+        
         return (
+            
             <div>
-                <h1>All Orders</h1>
-                <OrderTable orders={this.state.orders} changeStatus={this.changeStatus} deleteOrder={this.deleteOrder}/>
+                <h1>{ status }</h1>
+            <OrderTable orders={this.state.orders} changeStatus={this.changeStatus} deleteOrder={this.deleteOrder}/>
+            <Link to="/admin">Back to All Orders</Link>
             </div>
-        );
+        )
     }
 }
 
-export default OrderTracker;
+export default OrderStatus;

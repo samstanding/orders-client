@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Route, Redirect, Switch } from 'react-router-d
 import './App.css';
 import OrderTracker from './components/OrderTracker/OrderTracker';
 import OrderForm from './components/OrderForm/OrderForm';
+import OrderStatus from './components/OrderStatus/OrderStatus';
+
 
 class App extends Component {
   render() {
@@ -15,9 +17,13 @@ class App extends Component {
           component={OrderForm}
         />
         <Route
-          path="/admin"
+          exact path="/admin"
           component={OrderTracker}
         />
+        <Route
+          path="/admin/:id"
+          component={OrderStatus}
+        /> 
       </Switch>
       </Router>
     );
